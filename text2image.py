@@ -1,5 +1,8 @@
+import os
+import tensorflow as tf
 from tensorflow import keras
 from stable_diffusion_tf.stable_diffusion import Text2Image
+from stable_diffusion_tf.helpers import get_valid_filename
 import argparse
 from PIL import Image
 
@@ -14,11 +17,24 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--output",
-    type=str,
-    nargs="?",
-    default="output.png",
-    help="where to save the output image",
+    "--samples",
+    type=int,
+    default=4,
+    help="the number of samples to render",
+)
+
+parser.add_argument(
+    "--batch-size",
+    type=int,
+    default=1,
+    help="the batch size to render",
+)
+
+parser.add_argument(
+    "--temperature",
+    type=int,
+    default=1,
+    help="the temperature to render",
 )
 
 parser.add_argument(
@@ -59,20 +75,47 @@ parser.add_argument(
     help="Enable mixed precision (fp16 computation)",
 )
 
+parser.add_argument(
+    "--jit",
+    default=False,
+    action="store_true",
+    help="Enable XLA JIT compilation",
+)
+
 args = parser.parse_args()
 
 if args.mp:
     print("Using mixed precision.")
     keras.mixed_precision.set_global_policy("mixed_float16")
 
-generator = Text2Image(img_height=args.H, img_width=args.W, jit_compile=False)
-img = generator.generate(
-    args.prompt,
-    num_steps=args.steps,
-    unconditional_guidance_scale=args.scale,
-    temperature=1,
-    batch_size=1,
-    seed=args.seed,
-)
-Image.fromarray(img[0]).save(args.output)
-print(f"saved at {args.output}")
+gpus = tf.config.list_physical_devices('GPU')
+if len(gpus) <= 0:
+    raise Exception("No GPU found.")
+
+seed = args.seed
+timestamp = tf.timestamp()
+image_filename = get_valid_filename(f"s{seed}_{timestamp}" if seed else f"{timestamp}")
+prompt_output_directory = f"output/{args.prompt.replace(' ', '_')}"
+
+os.makedirs('output', exist_ok=True)
+os.makedirs(prompt_output_directory, exist_ok=True)
+
+generator = Text2Image(img_height=args.H, img_width=args.W, jit_compile=args.jit)
+
+for i in range(args.samples):
+    print(f"Rendering sample {i+1} of {args.samples}...")
+    img = generator.generate(
+        args.prompt,
+        num_steps=args.steps,
+        unconditional_guidance_scale=args.scale,
+        temperature=args.temperature,
+        batch_size=args.batch_size,
+        seed=seed,
+    )
+    if args.batch_size == 1:
+        image = Image.fromarray(img[0])
+        image.save(prompt_output_directory + f"/{i+1}_{image_filename}.png")
+    else:
+        for j in range(args.batch_size):
+            image = Image.fromarray(img[j])
+            image.save(prompt_output_directory + f"/{i+1}_{j+1}_{image_filename}.png")

@@ -68,6 +68,17 @@ pip install -r requirements.txt
     pip install -r requirements.txt
     ```
 
+#### Using a virtual environment with *conda*
+
+Follow the steps for installing tensorflow with miniconda: [install tensorflow with pip](https://www.tensorflow.org/install/pip) 
+or use an existing conda environment.
+
+Then with your conda environment activated, install the dependencies using the `requirements.txt` file or the `requirements_m1.txt` file:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Usage
 
 ### Using the Python interface
@@ -102,14 +113,16 @@ you can generate images from a text prompt using:
 python text2image.py --prompt="An astronaut riding a horse"
 ```
 
-The generated image will be named `output.png` on the root of the repo.
-If you want to use a different name, use the `--output` flag.
-
-```bash
-python text2image.py --prompt="An astronaut riding a horse" --output="my_image.png"
-```
+The generated image will be named on the `output` directory 
+in the following format `output/Your-Prompt/[sample]-[batch]-s[seed]-[timestamp].png`.
 
 Check out the `text2image.py` file for more options, including image size, number of steps, etc.
+
+## Troubleshooting
+
+### Low end GPUs
+
+If you have a lower-end GPU, using `--jit --mp` might help.
 
 ## Example outputs 
 

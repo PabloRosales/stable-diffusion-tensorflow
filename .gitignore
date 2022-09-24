@@ -179,3 +179,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+## Editor settings
+.vscode
+.idea
+
+# Output directory for images
+output
