@@ -94,9 +94,9 @@ if len(gpus) <= 0:
 
 seed = args.seed
 timestamp = tf.timestamp()
-image_filename = get_valid_filename(f"s{seed}_{timestamp}" if seed else f"{timestamp}")
-filename = f"t{args.temperature}_sc{args.scale}_st{args.steps}_{image_filename}.png"
-prompt_output_directory = f"output/{args.prompt.replace(' ', '_')}"
+filename = f"s{seed}_{timestamp}" if seed else f"{timestamp}"
+filename = f"t{args.temperature}_sc{args.scale}_st{args.steps}_{filename}.png"
+prompt_output_directory = f"output/{get_valid_filename(args.prompt.replace(' ', '_'))}"
 
 os.makedirs('output', exist_ok=True)
 os.makedirs(prompt_output_directory, exist_ok=True)
