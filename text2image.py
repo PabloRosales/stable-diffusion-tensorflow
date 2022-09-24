@@ -95,6 +95,7 @@ if len(gpus) <= 0:
 seed = args.seed
 timestamp = tf.timestamp()
 image_filename = get_valid_filename(f"s{seed}_{timestamp}" if seed else f"{timestamp}")
+filename = f"t{args.temperature}_sc{args.scale}_st{args.steps}_{image_filename}.png"
 prompt_output_directory = f"output/{args.prompt.replace(' ', '_')}"
 
 os.makedirs('output', exist_ok=True)
@@ -114,8 +115,8 @@ for i in range(args.samples):
     )
     if args.batch_size == 1:
         image = Image.fromarray(img[0])
-        image.save(prompt_output_directory + f"/{i+1}_{image_filename}.png")
+        image.save(prompt_output_directory + f"/{i+1}_{filename}")
     else:
         for j in range(args.batch_size):
             image = Image.fromarray(img[j])
-            image.save(prompt_output_directory + f"/{i+1}_{j+1}_{image_filename}.png")
+            image.save(prompt_output_directory + f"/{i+1}_{j+1}_{filename}")

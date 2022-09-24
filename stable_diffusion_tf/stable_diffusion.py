@@ -37,6 +37,7 @@ class Text2Image:
         unconditional_guidance_scale=7.5,
         temperature=1,
         seed=None,
+        noise_dropout=0,
     ):
         # Tokenize prompt (i.e. starting context)
         inputs = self.tokenizer.encode(prompt)
@@ -77,7 +78,7 @@ class Text2Image:
             )
             a_t, a_prev = alphas[index], alphas_prev[index]
             latent, pred_x0 = self.get_x_prev_and_pred_x0(
-                latent, e_t, index, a_t, a_prev, temperature, seed
+                latent, e_t, index, a_t, a_prev, temperature, seed, noise_dropout
             )
 
         # Decoding stage
@@ -114,7 +115,7 @@ class Text2Image:
             latent - unconditional_latent
         )
 
-    def get_x_prev_and_pred_x0(self, x, e_t, index, a_t, a_prev, temperature, seed):
+    def get_x_prev_and_pred_x0(self, x, e_t, index, a_t, a_prev, temperature, seed, noise_dropout):
         sigma_t = 0
         sqrt_one_minus_at = math.sqrt(1 - a_t)
         pred_x0 = (x - sqrt_one_minus_at * e_t) / math.sqrt(a_t)
@@ -122,7 +123,9 @@ class Text2Image:
         # Direction pointing to x_t
         dir_xt = math.sqrt(1.0 - a_prev - sigma_t**2) * e_t
         noise = sigma_t * tf.random.normal(x.shape, seed=seed) * temperature
-        x_prev = math.sqrt(a_prev) * pred_x0 + dir_xt
+        if noise_dropout > 0.:
+            noise = tf.nn.dropout(noise, noise_dropout)
+        x_prev = math.sqrt(a_prev) * pred_x0 + dir_xt + noise
         return x_prev, pred_x0
 
     def get_starting_parameters(self, timesteps, batch_size, seed):
@@ -157,7 +160,7 @@ def get_models(img_height, img_width, download_weights=True):
     latent = keras.layers.Input((n_h, n_w, 4))
     decoder = Decoder()
     decoder = keras.models.Model(latent, decoder(latent))
-    
+
     if download_weights:
         text_encoder_weights_fpath = keras.utils.get_file(
             origin="https://huggingface.co/fchollet/stable-diffusion/resolve/main/text_encoder.h5",
