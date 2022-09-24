@@ -32,7 +32,7 @@ parser.add_argument(
 
 parser.add_argument(
     "--temperature",
-    type=int,
+    type=float,
     default=1,
     help="the temperature to render",
 )
