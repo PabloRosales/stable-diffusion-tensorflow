@@ -113,8 +113,8 @@ you can generate images from a text prompt using:
 python text2image.py --prompt="An astronaut riding a horse"
 ```
 
-The generated image will be named on the `output` directory 
-in the following format `output/Your-Prompt/[sample]-[batch]-s[seed]-[timestamp].png`.
+The generated image(s) will be stored on the `output` directory 
+in the following format `output/Your-Prompt/[# sample]-[# batch]-s[seed]-[timestamp].png`.
 
 Check out the `text2image.py` file for more options, including image size, number of steps, etc.
 
