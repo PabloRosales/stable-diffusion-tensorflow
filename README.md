@@ -1,5 +1,7 @@
 # Stable Diffusion in TensorFlow / Keras
 
+**Note**: This is a fork as a playground.
+
 A Keras / Tensorflow implementation of Stable Diffusion. 
 
 The weights were ported from the original implementation.
